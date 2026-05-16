@@ -1,78 +1,153 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
-import { useAuth }  from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
-export default function Login() {
-  const { login }    = useAuth()
-  const { addToast } = useToast()
-  const navigate     = useNavigate()
-  const location     = useLocation()
-  const from         = location.state?.from?.pathname || '/'
+const FEATURES = [
+  { title: 'Instant access', text: 'Manage active trips and booking history from one dashboard.' },
+  { title: 'Fast rebooking', text: 'Jump back into the same route and class selection in seconds.' },
+  { title: 'Cancellation control', text: 'Track booking state and cancel upcoming trips with clarity.' },
+  { title: 'Traveler-first flow', text: 'Calm, readable screens designed for real booking confidence.' },
+]
 
-  const [form, setForm]     = useState({ email: '', password: '' })
+export default function Login() {
+  const { login } = useAuth()
+  const { addToast } = useToast()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || '/'
+
+  const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setLoading(true)
+
     try {
-      const res = await api.post('/auth/login', form)
-      login(res.data.user, res.data.token)
-      addToast(`Welcome back, ${res.data.user.name}! 👋`, 'success')
+      const response = await api.post('/auth/login', form)
+      login(response.data.user, response.data.token)
+      addToast(`Welcome back, ${response.data.user.name}!`, 'success')
       navigate(from, { replace: true })
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Login failed', 'error')
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Login failed', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={s.page}>
-      <div className="card animate-fadeUp" style={s.card}>
-        <div style={s.header}>
-          <Link to="/" style={s.logo}>🚆 RailYatra</Link>
-          <h1 style={s.title}>Welcome back</h1>
-          <p style={s.sub}>Sign in to access your bookings</p>
+    <div className="auth-shell">
+      <div className="container">
+        <div className="auth-panel">
+          <div className="auth-hero animate-fadeUp">
+            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.08)', color: '#ffdba5', borderColor: 'rgba(255,255,255,0.1)' }}>
+              Secure traveler account
+            </div>
+            <h1 style={styles.heroTitle}>Welcome back to your rail workspace.</h1>
+            <p style={styles.heroText}>
+              Sign in to continue bookings, review PNR details, and manage upcoming journeys without friction.
+            </p>
+
+            <div className="auth-feature-grid">
+              {FEATURES.map((feature) => (
+                <div key={feature.title} className="auth-feature">
+                  <h3 style={styles.featureTitle}>{feature.title}</h3>
+                  <p style={styles.featureText}>{feature.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card auth-card animate-fadeUp" style={{ animationDelay: '0.08s' }}>
+            <div>
+              <div className="section-kicker">Sign In</div>
+              <h2 style={styles.formTitle}>Access your bookings</h2>
+              <p className="muted" style={{ marginTop: 8 }}>
+                Use your email and password to continue where you left off.
+              </p>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="auth-form__row">
+                <label className="form-label">Email address</label>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={form.email}
+                  onChange={(event) => setForm((value) => ({ ...value, email: event.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="auth-form__row">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={form.password}
+                  onChange={(event) => setForm((value) => ({ ...value, password: event.target.value }))}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '15px 22px', marginTop: 6 }}
+                disabled={loading}
+              >
+                {loading ? <><span className="loader" /> Signing in</> : 'Sign In'}
+              </button>
+            </form>
+
+            <p className="muted" style={{ textAlign: 'center' }}>
+              Don&apos;t have an account?{' '}
+              <Link to="/register" style={styles.inlineLink}>
+                Create one
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit} style={s.form}>
-          <div style={s.field}>
-            <label style={s.label}>Email address</label>
-            <input type="email" placeholder="you@example.com" value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Password</label>
-            <input type="password" placeholder="Your password" value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
-          </div>
-          <button type="submit" className="btn btn-primary" style={s.btn} disabled={loading}>
-            {loading ? <><span className="loader" /> Signing in...</> : 'Sign In →'}
-          </button>
-        </form>
-
-        <p style={s.switch}>
-          Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Create one</Link>
-        </p>
       </div>
     </div>
   )
 }
 
-const s = {
-  page:  { minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 16px' },
-  card:  { width: '100%', maxWidth: 420, borderColor: 'var(--border-lit)', boxShadow: 'var(--shadow-lg)' },
-  header:{ textAlign: 'center', marginBottom: 28 },
-  logo:  { display: 'inline-block', fontFamily: 'var(--font-head)', fontSize: 18, fontWeight: 800, color: 'var(--accent)', textDecoration: 'none', marginBottom: 16 },
-  title: { fontFamily: 'var(--font-head)', fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 6 },
-  sub:   { fontSize: 14, color: 'var(--text-muted)' },
-  form:  { display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 },
-  field: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'var(--font-head)' },
-  btn:   { width: '100%', justifyContent: 'center', padding: 13, fontSize: 15, marginTop: 4 },
-  switch:{ textAlign: 'center', fontSize: 14, color: 'var(--text-muted)' },
+const styles = {
+  heroTitle: {
+    maxWidth: 520,
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(34px, 5vw, 52px)',
+    lineHeight: 1.04,
+    letterSpacing: '-0.04em',
+  },
+  heroText: {
+    maxWidth: 520,
+    marginTop: 14,
+    color: 'rgba(255, 253, 248, 0.76)',
+    fontSize: 16,
+  },
+  featureTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  featureText: {
+    color: 'rgba(255, 253, 248, 0.74)',
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
+  formTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 34,
+    lineHeight: 1.05,
+    letterSpacing: '-0.04em',
+  },
+  inlineLink: {
+    color: 'var(--accent-strong)',
+    fontWeight: 700,
+    textDecoration: 'none',
+  },
 }

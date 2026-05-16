@@ -3,70 +3,73 @@ import { useNavigate } from 'react-router-dom'
 export default function TrainCard({ train, journeyDate }) {
   const navigate = useNavigate()
 
-  const availColor =
-    train.availableSeats > 50 ? 'badge-green' :
-    train.availableSeats > 10 ? 'badge-orange' : 'badge-red'
+  const availabilityClass =
+    train.availableSeats > 50 ? 'badge-green' : train.availableSeats > 10 ? 'badge-orange' : 'badge-red'
 
-  const availText =
-    train.availableSeats > 50 ? 'Available' :
-    train.availableSeats > 10 ? 'Filling Fast' : 'Few Left'
+  const availabilityText =
+    train.availableSeats > 50 ? 'Available' : train.availableSeats > 10 ? 'Filling Fast' : 'Few Left'
+
+  const classes = train.classes?.length > 0 ? train.classes : [{ type: 'General', price: train.price }]
 
   return (
-    <div style={s.card} className="animate-fadeUp"
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-lit)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}
-    >
-      {/* Header */}
-      <div style={s.header}>
+    <div className="card animate-fadeUp" style={styles.card}>
+      <div style={styles.topRow}>
         <div>
-          <div style={s.trainNum}>{train.trainNumber}</div>
-          <div style={s.trainName}>{train.name}</div>
+          <div style={styles.trainNumber}>{train.trainNumber}</div>
+          <h3 style={styles.trainName}>{train.name}</h3>
         </div>
-        <span className={`badge ${availColor}`}>{availText}</span>
+        <span className={`badge ${availabilityClass}`}>{availabilityText}</span>
       </div>
 
-      {/* Route */}
-      <div style={s.route}>
+      <div style={styles.routeWrap}>
         <div>
-          <div style={s.time}>{train.departureTime}</div>
-          <div style={s.station}>{train.from}</div>
+          <div style={styles.time}>{train.departureTime}</div>
+          <div style={styles.station}>{train.from}</div>
         </div>
-        <div style={s.trackWrap}>
-          <div style={s.dot} />
-          <div style={s.track}><span style={s.duration}>Direct</span></div>
-          <div style={s.dot} />
+
+        <div style={styles.trackBlock}>
+          <div style={styles.trackMeta}>
+            <span style={styles.trackCity}>Boarding</span>
+            <span style={styles.trackPill}>Direct route</span>
+            <span style={styles.trackCity}>Arrival</span>
+          </div>
+          <div style={styles.trackLine}>
+            <span style={styles.trackDot} />
+            <span style={styles.trackRail} />
+            <span style={styles.trackCenter}>Rail corridor</span>
+            <span style={styles.trackRail} />
+            <span style={styles.trackDot} />
+          </div>
         </div>
+
         <div style={{ textAlign: 'right' }}>
-          <div style={s.time}>{train.arrivalTime}</div>
-          <div style={s.station}>{train.to}</div>
+          <div style={styles.time}>{train.arrivalTime}</div>
+          <div style={styles.station}>{train.to}</div>
         </div>
       </div>
 
-      <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '16px 0' }} />
-
-      {/* Footer */}
-      <div style={s.footer}>
-        <div style={s.classList}>
-          {(train.classes?.length > 0
-            ? train.classes
-            : [{ type: 'General', price: train.price }]
-          ).map(cls => (
-            <div key={cls.type} style={s.chip}>
-              <span style={s.chipType}>{cls.type}</span>
-              <span style={s.chipPrice}>₹{cls.price}</span>
+      <div style={styles.footer}>
+        <div style={styles.classList}>
+          {classes.map((travelClass) => (
+            <div key={travelClass.type} style={styles.classChip}>
+              <span style={styles.classChipLabel}>{travelClass.type}</span>
+              <span style={styles.classChipPrice}>Rs {travelClass.price}</span>
             </div>
           ))}
         </div>
-        <div style={s.actions}>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            <span style={{ color: 'var(--green)', fontWeight: 700 }}>{train.availableSeats}</span> seats
-          </span>
+
+        <div style={styles.actionWrap}>
+          <div style={styles.seatBox}>
+            <span style={styles.seatCount}>{train.availableSeats}</span>
+            <span style={styles.seatLabel}>seats left</span>
+          </div>
+
           <button
+            type="button"
             className="btn btn-primary"
-            style={{ padding: '9px 20px' }}
             onClick={() => navigate(`/book/${train._id}`, { state: { train, journeyDate } })}
           >
-            Book Now →
+            Book Now
           </button>
         </div>
       </div>
@@ -74,26 +77,163 @@ export default function TrainCard({ train, journeyDate }) {
   )
 }
 
-const s = {
+const styles = {
   card: {
-    background: 'var(--bg-card)', border: '1px solid var(--border)',
-    borderRadius: 12, padding: '22px 24px',
-    transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',
+    borderRadius: 30,
+    padding: 24,
   },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
-  trainNum: { fontSize: 11, fontWeight: 600, color: 'var(--accent)', letterSpacing: '0.08em', fontFamily: 'var(--font-head)', marginBottom: 2 },
-  trainName: { fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-head)', color: 'var(--text)' },
-  route: { display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 16 },
-  time: { fontFamily: 'var(--font-head)', fontSize: 26, fontWeight: 800, color: 'var(--text)', lineHeight: 1 },
-  station: { fontSize: 13, color: 'var(--text-muted)', marginTop: 4 },
-  trackWrap: { display: 'flex', alignItems: 'center', gap: 6 },
-  dot: { width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 },
-  track: { flex: 1, height: 2, background: 'linear-gradient(90deg, var(--accent), var(--border-lit), var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 80 },
-  duration: { fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-card)', padding: '1px 6px', borderRadius: 4 },
-  footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' },
-  classList: { display: 'flex', gap: 8, flexWrap: 'wrap' },
-  chip: { display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', gap: 1 },
-  chipType: { fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.06em', fontFamily: 'var(--font-head)' },
-  chipPrice: { fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-head)' },
-  actions: { display: 'flex', alignItems: 'center', gap: 14 },
+  topRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'start',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  trainNumber: {
+    color: 'var(--accent-strong)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  trainName: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 27,
+    lineHeight: 1.05,
+    letterSpacing: '-0.04em',
+  },
+  routeWrap: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+    alignItems: 'center',
+    gap: 18,
+    marginTop: 26,
+  },
+  time: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(26px, 4vw, 36px)',
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: '-0.05em',
+  },
+  station: {
+    marginTop: 6,
+    color: 'var(--text-muted)',
+    fontSize: 14,
+  },
+  trackBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  trackMeta: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    fontSize: 12,
+    color: 'var(--text-dim)',
+  },
+  trackCity: {
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    fontFamily: 'var(--font-head)',
+    fontSize: 10,
+    fontWeight: 700,
+  },
+  trackPill: {
+    padding: '6px 10px',
+    borderRadius: 999,
+    background: 'rgba(255,255,255,0.8)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+    color: 'var(--text-muted)',
+  },
+  trackLine: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  trackDot: {
+    width: 10,
+    height: 10,
+    borderRadius: '50%',
+    background: 'var(--accent-strong)',
+    boxShadow: '0 0 0 5px rgba(215, 137, 29, 0.12)',
+    flexShrink: 0,
+  },
+  trackRail: {
+    flex: 1,
+    height: 2,
+    background: 'linear-gradient(90deg, rgba(215,137,29,0.8), rgba(18,49,73,0.18))',
+  },
+  trackCenter: {
+    padding: '4px 10px',
+    borderRadius: 999,
+    background: 'rgba(18, 49, 73, 0.05)',
+    color: 'var(--text-muted)',
+    fontSize: 12,
+    whiteSpace: 'nowrap',
+  },
+  footer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 18,
+    alignItems: 'end',
+    flexWrap: 'wrap',
+    marginTop: 24,
+    paddingTop: 20,
+    borderTop: '1px solid rgba(18, 49, 73, 0.1)',
+  },
+  classList: {
+    display: 'flex',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  classChip: {
+    padding: '12px 14px',
+    borderRadius: 18,
+    background: 'rgba(255,255,255,0.8)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+    minWidth: 92,
+  },
+  classChipLabel: {
+    display: 'block',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: 'var(--text-dim)',
+    marginBottom: 4,
+  },
+  classChipPrice: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    fontWeight: 800,
+  },
+  actionWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 14,
+    flexWrap: 'wrap',
+  },
+  seatBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    padding: '8px 0',
+  },
+  seatCount: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 24,
+    fontWeight: 800,
+    color: 'var(--green)',
+    lineHeight: 1,
+  },
+  seatLabel: {
+    fontSize: 13,
+    color: 'var(--text-muted)',
+  },
 }

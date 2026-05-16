@@ -1,177 +1,431 @@
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
-import { useAuth }  from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 
-const STATUS = { Confirmed: 'badge-green', Cancelled: 'badge-red', Pending: 'badge-orange' }
+const STATUS_STYLES = {
+  Confirmed: 'badge-green',
+  Cancelled: 'badge-red',
+  Pending: 'badge-orange',
+}
 
 export default function MyBookings() {
-  const { user }     = useAuth()
+  const { user } = useAuth()
   const { addToast } = useToast()
-  const [bookings, setBookings]   = useState([])
-  const [loading, setLoading]     = useState(true)
+
+  const [bookings, setBookings] = useState([])
+  const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(null)
-  const [filter, setFilter]       = useState('All')
+  const [filter, setFilter] = useState('All')
 
   useEffect(() => {
-    api.get('/bookings/my')
-      .then(res => setBookings(res.data))
+    api
+      .get('/bookings/my')
+      .then((response) => setBookings(response.data))
       .catch(() => addToast('Failed to load bookings', 'error'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [addToast])
 
-  const handleCancel = async (id) => {
+  const handleCancel = async (bookingId) => {
     if (!window.confirm('Cancel this booking?')) return
-    setCancelling(id)
+
+    setCancelling(bookingId)
+
     try {
-      await api.patch(`/bookings/${id}/cancel`)
-      setBookings(b => b.map(bk => bk._id === id ? { ...bk, status: 'Cancelled' } : bk))
+      await api.patch(`/bookings/${bookingId}/cancel`)
+      setBookings((current) =>
+        current.map((booking) => (booking._id === bookingId ? { ...booking, status: 'Cancelled' } : booking))
+      )
       addToast('Booking cancelled', 'success')
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Cancellation failed', 'error')
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Cancellation failed', 'error')
     } finally {
-      setCancelling(null) }
+      setCancelling(null)
+    }
   }
 
-  const filtered = filter === 'All' ? bookings : bookings.filter(b => b.status === filter)
+  const filteredBookings =
+    filter === 'All' ? bookings : bookings.filter((booking) => booking.status === filter)
+
+  const bookingCounts = {
+    All: bookings.length,
+    Confirmed: bookings.filter((booking) => booking.status === 'Confirmed').length,
+    Cancelled: bookings.filter((booking) => booking.status === 'Cancelled').length,
+  }
 
   return (
-    <div className="page"><div className="container">
-      {/* Header */}
-      <div style={s.header} className="animate-fadeUp">
-        <div>
-          <h1 style={s.pageTitle}>My Bookings</h1>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
-            Welcome, <strong style={{ color: 'var(--accent)' }}>{user?.name}</strong>
-          </p>
-        </div>
-        <div style={s.filters}>
-          {['All', 'Confirmed', 'Cancelled'].map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              style={{ ...s.filterBtn, ...(filter === f ? s.filterActive : {}) }}>
-              {f} <span style={s.filterCount}>{f === 'All' ? bookings.length : bookings.filter(b => b.status === f).length}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="page">
+      <div className="container">
+        <section className="card panel-highlight animate-fadeUp" style={styles.heroCard}>
+          <div style={styles.heroTop}>
+            <div>
+              <div className="section-kicker">Traveler Dashboard</div>
+              <h1 style={styles.pageTitle}>My bookings</h1>
+              <p className="muted" style={{ marginTop: 10 }}>
+                Welcome back, <strong style={{ color: 'var(--accent-strong)' }}>{user?.name}</strong>. Review your
+                trips, PNR numbers, and live booking status in one place.
+              </p>
+            </div>
 
-      {/* Loading */}
-      {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {[1,2,3].map(i => <div key={i} style={{ height: 220, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, animation: 'pulse 1.5s ease infinite' }} />)}
-        </div>
-      )}
+            <div style={styles.filterRow}>
+              {['All', 'Confirmed', 'Cancelled'].map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setFilter(item)}
+                  style={{
+                    ...styles.filterButton,
+                    ...(filter === item ? styles.filterButtonActive : {}),
+                  }}
+                >
+                  <span>{item}</span>
+                  <span style={styles.filterCount}>{bookingCounts[item]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      {/* Empty */}
-      {!loading && filtered.length === 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '80px 0', textAlign: 'center' }}>
-          <span style={{ fontSize: 56 }}>🎫</span>
-          <h3 style={{ fontFamily: 'var(--font-head)', fontSize: 20 }}>No bookings found</h3>
-          <p style={{ color: 'var(--text-muted)' }}>Your travel history will appear here</p>
-        </div>
-      )}
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginTop: 24 }}>
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                style={{
+                  height: 260,
+                  borderRadius: 30,
+                  background: 'rgba(255, 252, 245, 0.7)',
+                  border: '1px solid rgba(18, 49, 73, 0.08)',
+                  animation: 'pulse 1.5s ease infinite',
+                }}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* Booking Cards */}
-      {!loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {filtered.map((booking, i) => {
-            const train  = booking.train
-            const isPast = new Date(booking.journeyDate) < new Date()
-            return (
-              <div key={booking._id} className="animate-fadeUp" style={{ ...s.card, animationDelay: `${i * 0.07}s` }}>
+        {!loading && filteredBookings.length === 0 && (
+          <div className="card" style={styles.emptyCard}>
+            <div className="section-kicker">No bookings yet</div>
+            <h2 style={styles.emptyTitle}>Your travel history will appear here.</h2>
+            <p className="muted">Search and confirm a train ticket to start building your trip dashboard.</p>
+          </div>
+        )}
 
-                {/* Card Header */}
-                <div style={s.cardHead}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={s.pnrTag}>PNR</span>
-                    <span style={s.pnrVal}>{booking.pnrNumber}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <span className={`badge ${STATUS[booking.status]}`}>{booking.status}</span>
-                    {isPast && booking.status === 'Confirmed' && <span className="badge badge-blue">Completed</span>}
-                  </div>
-                </div>
+        {!loading && filteredBookings.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginTop: 24 }}>
+            {filteredBookings.map((booking, index) => {
+              const train = booking.train
+              const isPastJourney = new Date(booking.journeyDate) < new Date()
 
-                {/* Card Body */}
-                <div style={{ padding: '20px 20px 0' }}>
-                  <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, fontFamily: 'var(--font-head)' }}>{train?.trainNumber}</div>
-                    <div style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-head)' }}>{train?.name || 'Train'}</div>
-                  </div>
-
-                  {/* Route */}
-                  <div style={s.route}>
-                    <div><div style={s.time}>{train?.departureTime}</div><div style={s.station}>{train?.from}</div></div>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, margin: '0 12px' }}>
-                      <div style={{ flex: 1, height: 1, background: 'var(--border-lit)' }} />
-                      <span>🚆</span>
-                      <div style={{ flex: 1, height: 1, background: 'var(--border-lit)' }} />
+              return (
+                <article key={booking._id} className="card animate-fadeUp" style={{ ...styles.bookingCard, animationDelay: `${index * 0.06}s` }}>
+                  <div style={styles.bookingTop}>
+                    <div>
+                      <div style={styles.pnrLabel}>PNR Number</div>
+                      <div style={styles.pnrValue}>{booking.pnrNumber}</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}><div style={s.time}>{train?.arrivalTime}</div><div style={s.station}>{train?.to}</div></div>
+
+                    <div style={styles.statusGroup}>
+                      <span className={`badge ${STATUS_STYLES[booking.status]}`}>{booking.status}</span>
+                      {isPastJourney && booking.status === 'Confirmed' && <span className="badge badge-blue">Completed</span>}
+                    </div>
                   </div>
 
-                  {/* Meta */}
-                  <div style={s.meta}>
+                  <div style={styles.bookingMiddle}>
+                    <div style={styles.trainMeta}>
+                      <div style={styles.trainNumber}>{train?.trainNumber}</div>
+                      <h2 style={styles.trainName}>{train?.name || 'Train'}</h2>
+                      <p className="muted" style={{ marginTop: 8 }}>
+                        {new Date(booking.journeyDate).toDateString()}
+                      </p>
+                    </div>
+
+                    <div style={styles.routeCard}>
+                      <div>
+                        <div style={styles.routeTime}>{train?.departureTime}</div>
+                        <div style={styles.routeStation}>{train?.from}</div>
+                      </div>
+                      <div style={styles.routeMiddle}>
+                        <div style={styles.routeLine} />
+                        <span style={styles.routePill}>Scheduled journey</span>
+                        <div style={styles.routeLine} />
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={styles.routeTime}>{train?.arrivalTime}</div>
+                        <div style={styles.routeStation}>{train?.to}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={styles.metaGrid}>
                     {[
-                      ['Date',       new Date(booking.journeyDate).toDateString()],
-                      ['Class',      booking.class],
+                      ['Class', booking.class],
                       ['Passengers', booking.passengers?.length],
-                      ['Amount',     `₹${booking.totalAmount}`],
-                    ].map(([k, v]) => (
-                      <div key={k} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-dim)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-head)' }}>{k}</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: k === 'Amount' ? 'var(--accent)' : 'var(--text)', fontFamily: k === 'Amount' ? 'var(--font-head)' : 'inherit', fontWeight: k === 'Amount' ? 700 : 500 }}>{v}</span>
+                      ['Amount', `Rs ${booking.totalAmount}`],
+                      ['Status', booking.status],
+                    ].map(([label, value]) => (
+                      <div key={label} style={styles.metaItem}>
+                        <div style={styles.metaLabel}>{label}</div>
+                        <div style={styles.metaValue}>{value}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Passengers */}
                   {booking.passengers?.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '14px 0' }}>
-                      {booking.passengers.map((p, pi) => (
-                        <div key={pi} style={s.passengerTag}>
-                          <span style={s.passengerNum}>{pi + 1}</span>
-                          <span>{p.name}</span>
-                          <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>{p.age}y · {p.gender}</span>
+                    <div style={styles.passengerWrap}>
+                      {booking.passengers.map((passenger, passengerIndex) => (
+                        <div key={`${passenger.name}-${passengerIndex}`} style={styles.passengerChip}>
+                          <span style={styles.passengerIndex}>{passengerIndex + 1}</span>
+                          <div>
+                            <div style={{ fontWeight: 700 }}>{passenger.name}</div>
+                            <div className="muted" style={{ fontSize: 12 }}>
+                              {passenger.age} yrs · {passenger.gender}
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </div>
 
-                {/* Cancel Button */}
-                {booking.status === 'Confirmed' && !isPast && (
-                  <div style={{ padding: '14px 20px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button className="btn btn-danger" style={{ padding: '9px 20px', fontSize: 13 }}
-                      onClick={() => handleCancel(booking._id)} disabled={cancelling === booking._id}>
-                      {cancelling === booking._id ? <><span className="loader" /> Cancelling...</> : 'Cancel Booking'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div></div>
+                  {booking.status === 'Confirmed' && !isPastJourney && (
+                    <div style={styles.actionRow}>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => handleCancel(booking._id)}
+                        disabled={cancelling === booking._id}
+                      >
+                        {cancelling === booking._id ? <><span className="loader" /> Cancelling</> : 'Cancel Booking'}
+                      </button>
+                    </div>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
-const s = {
-  header:       { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 32 },
-  pageTitle:    { fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' },
-  filters:      { display: 'flex', gap: 8 },
-  filterBtn:    { background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '8px 16px', borderRadius: 20, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-body)', transition: 'all 0.2s' },
-  filterActive: { background: 'var(--accent)', borderColor: 'var(--accent)', color: '#0a0c10', fontWeight: 600 },
-  filterCount:  { background: 'rgba(0,0,0,0.15)', borderRadius: 10, padding: '1px 7px', fontSize: 11 },
-  card:         { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' },
-  cardHead:     { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: 'var(--bg)', borderBottom: '1px solid var(--border)' },
-  pnrTag:       { fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: 'var(--text-dim)', fontFamily: 'var(--font-head)', background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '2px 7px', borderRadius: 4 },
-  pnrVal:       { fontFamily: 'var(--font-head)', fontSize: 15, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.04em' },
-  route:        { display: 'flex', alignItems: 'center', marginBottom: 16 },
-  time:         { fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 800, lineHeight: 1 },
-  station:      { fontSize: 13, color: 'var(--text-muted)', marginTop: 3 },
-  meta:         { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, padding: 14, background: 'var(--bg)', borderRadius: 8, border: '1px solid var(--border)', marginBottom: 4 },
-  passengerTag: { display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 20, padding: '5px 12px 5px 6px', fontSize: 13, color: 'var(--text-muted)' },
-  passengerNum: { width: 20, height: 20, borderRadius: '50%', background: 'var(--accent)', color: '#0a0c10', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-head)' },
+const styles = {
+  heroCard: {
+    padding: 28,
+    borderRadius: 34,
+  },
+  heroTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 18,
+    alignItems: 'end',
+    flexWrap: 'wrap',
+  },
+  pageTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(36px, 5vw, 54px)',
+    lineHeight: 1.02,
+    letterSpacing: '-0.05em',
+  },
+  filterRow: {
+    display: 'flex',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  filterButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '11px 14px',
+    borderRadius: 999,
+    border: '1px solid rgba(18, 49, 73, 0.12)',
+    background: 'rgba(255,255,255,0.74)',
+    cursor: 'pointer',
+    color: 'var(--text)',
+    fontWeight: 700,
+  },
+  filterButtonActive: {
+    background: 'linear-gradient(135deg, #e09a32 0%, #c57810 100%)',
+    color: '#fffdf7',
+    borderColor: 'transparent',
+  },
+  filterCount: {
+    minWidth: 28,
+    padding: '4px 8px',
+    borderRadius: 999,
+    background: 'rgba(18, 49, 73, 0.08)',
+    fontSize: 12,
+  },
+  emptyCard: {
+    marginTop: 24,
+    padding: '42px 24px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    marginTop: 16,
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(28px, 4vw, 40px)',
+    lineHeight: 1.08,
+    letterSpacing: '-0.04em',
+  },
+  bookingCard: {
+    borderRadius: 30,
+    padding: 24,
+  },
+  bookingTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'start',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  pnrLabel: {
+    color: 'var(--text-dim)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  },
+  pnrValue: {
+    marginTop: 8,
+    fontFamily: 'var(--font-head)',
+    fontSize: 28,
+    fontWeight: 800,
+    color: 'var(--accent-strong)',
+    letterSpacing: '0.02em',
+  },
+  statusGroup: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  bookingMiddle: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: 20,
+    marginTop: 22,
+    alignItems: 'center',
+  },
+  trainMeta: {
+    padding: 20,
+    borderRadius: 24,
+    background: 'rgba(255,255,255,0.74)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  trainNumber: {
+    color: 'var(--accent-strong)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  trainName: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 28,
+    lineHeight: 1.06,
+    letterSpacing: '-0.04em',
+  },
+  routeCard: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+    gap: 16,
+    alignItems: 'center',
+    padding: 22,
+    borderRadius: 24,
+    background: 'rgba(255,255,255,0.72)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  routeTime: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(26px, 4vw, 34px)',
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: '-0.04em',
+  },
+  routeStation: {
+    marginTop: 6,
+    color: 'var(--text-muted)',
+  },
+  routeMiddle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  routeLine: {
+    flex: 1,
+    height: 2,
+    background: 'linear-gradient(90deg, rgba(215,137,29,0.8), rgba(18,49,73,0.18))',
+  },
+  routePill: {
+    padding: '7px 10px',
+    borderRadius: 999,
+    background: 'rgba(255,255,255,0.92)',
+    color: 'var(--text-muted)',
+    fontSize: 12,
+    whiteSpace: 'nowrap',
+  },
+  metaGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: 12,
+    marginTop: 18,
+  },
+  metaItem: {
+    padding: 16,
+    borderRadius: 20,
+    background: 'rgba(255,255,255,0.72)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  metaLabel: {
+    color: 'var(--text-dim)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  metaValue: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    fontWeight: 700,
+  },
+  passengerWrap: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 18,
+  },
+  passengerChip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    padding: '12px 14px',
+    borderRadius: 20,
+    background: 'rgba(255,255,255,0.78)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  passengerIndex: {
+    width: 28,
+    height: 28,
+    borderRadius: '50%',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'linear-gradient(135deg, #e09a32 0%, #c57810 100%)',
+    color: '#fff',
+    fontFamily: 'var(--font-head)',
+    fontWeight: 800,
+    fontSize: 12,
+  },
+  actionRow: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: 20,
+    paddingTop: 18,
+    borderTop: '1px solid rgba(18, 49, 73, 0.1)',
+  },
 }

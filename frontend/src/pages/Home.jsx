@@ -2,10 +2,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const POPULAR = [
-  { from: 'Chennai',   to: 'Delhi' },
-  { from: 'Mumbai',    to: 'Delhi' },
-  { from: 'Bangalore', to: 'Hyderabad' },
-  { from: 'Coimbatore',to: 'Chennai' },
+  { from: 'Chennai', to: 'Delhi', tag: 'Business corridor' },
+  { from: 'Mumbai', to: 'Delhi', tag: 'High demand' },
+  { from: 'Bangalore', to: 'Hyderabad', tag: 'Fast weekend route' },
+  { from: 'Coimbatore', to: 'Chennai', tag: 'Daily commuter favorite' },
+]
+
+const HIGHLIGHTS = [
+  { value: '10K+', label: 'Daily train options' },
+  { value: '500+', label: 'Stations connected' },
+  { value: '2M+', label: 'Passengers served daily' },
+  { value: '24/7', label: 'Smart booking access' },
 ]
 
 export default function Home() {
@@ -13,113 +20,356 @@ export default function Home() {
   const today = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState({ from: '', to: '', date: today, passengers: 1 })
 
-  const handleSearch = (e) => {
-    e.preventDefault()
+  const handleSearch = (event) => {
+    event.preventDefault()
     navigate(`/search?from=${form.from}&to=${form.to}&date=${form.date}&passengers=${form.passengers}`)
   }
 
   return (
-    <div>
-      {/* Hero */}
-      <div style={s.hero}>
-        <div style={s.glow} />
-        <div className="container">
-          <div className="animate-fadeUp" style={{ marginBottom: 40 }}>
-            <div style={s.tag}>🚆 India's Modern Rail Booking</div>
-            <h1 style={s.title}>Travel India<br /><span style={{ color: 'var(--accent)' }}>On Rails</span></h1>
-            <p style={s.subtitle}>Search, compare & book train tickets instantly.<br />Real-time seat availability.</p>
-          </div>
+    <div className="page">
+      <div className="container">
+        <section style={styles.heroWrap}>
+          <div className="card panel-highlight animate-fadeUp" style={styles.heroCard}>
+            <div style={styles.heroGrid}>
+              <div>
+                <div className="section-kicker">Railway Booking Reimagined</div>
+                <h1 style={styles.title}>
+                  Book India&apos;s rail journeys with a cleaner, faster, more confident flow.
+                </h1>
+                <p style={styles.subtitle}>
+                  Search routes, compare class fares, and manage bookings in one polished experience
+                  built for everyday travelers.
+                </p>
 
-          {/* Search Box */}
-          <div className="card animate-fadeUp" style={{ borderColor: 'var(--border-lit)', boxShadow: 'var(--shadow-lg)' }}>
-            <form onSubmit={handleSearch}>
-              <div style={s.fields}>
-                <div style={s.field}>
-                  <label style={s.label}>From</label>
-                  <input placeholder="Departure city" value={form.from}
-                    onChange={e => setForm(f => ({ ...f, from: e.target.value }))} required />
-                </div>
-
-                <button type="button" style={s.swapBtn}
-                  onClick={() => setForm(f => ({ ...f, from: f.to, to: f.from }))}>⇄</button>
-
-                <div style={s.field}>
-                  <label style={s.label}>To</label>
-                  <input placeholder="Destination city" value={form.to}
-                    onChange={e => setForm(f => ({ ...f, to: e.target.value }))} required />
-                </div>
-
-                <div style={s.field}>
-                  <label style={s.label}>Date</label>
-                  <input type="date" value={form.date} min={today}
-                    onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
-                </div>
-
-                <div style={{ ...s.field, maxWidth: 150 }}>
-                  <label style={s.label}>Passengers</label>
-                  <select value={form.passengers} onChange={e => setForm(f => ({ ...f, passengers: e.target.value }))}>
-                    {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} Passenger{n > 1 ? 's' : ''}</option>)}
-                  </select>
+                <div style={styles.heroStats}>
+                  {HIGHLIGHTS.map((item) => (
+                    <div key={item.label} style={styles.heroStat}>
+                      <div style={styles.heroStatValue}>{item.value}</div>
+                      <div style={styles.heroStatLabel}>{item.label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary"
-                style={{ width: '100%', justifyContent: 'center', padding: 14, fontSize: 15, marginTop: 16 }}>
-                Search Trains →
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+              <div className="animate-fadeIn" style={styles.searchShell}>
+                <div style={styles.searchTop}>
+                  <div>
+                    <div style={styles.searchLabel}>Journey Planner</div>
+                    <h2 style={styles.searchTitle}>Find your next train</h2>
+                  </div>
+                  <div style={styles.liveChip}>Live route search</div>
+                </div>
 
-      {/* Popular Routes */}
-      <div className="container">
-        <h2 style={s.sectionTitle}>Popular Routes</h2>
-        <div style={s.routeGrid}>
-          {POPULAR.map((r, i) => (
-            <button key={i} style={s.routeCard}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none' }}
-              onClick={() => setForm(f => ({ ...f, from: r.from, to: r.to }))}>
-              <span style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>{r.from}</span>
-              <span style={{ color: 'var(--accent)' }}>→</span>
-              <span style={{ fontFamily: 'var(--font-head)', fontWeight: 600 }}>{r.to}</span>
-            </button>
-          ))}
-        </div>
+                <form onSubmit={handleSearch}>
+                  <div style={styles.fields}>
+                    <div style={styles.field}>
+                      <label className="form-label">From</label>
+                      <input
+                        placeholder="Departure city"
+                        value={form.from}
+                        onChange={(event) => setForm((value) => ({ ...value, from: event.target.value }))}
+                        required
+                      />
+                    </div>
 
-        {/* Stats */}
-        <div style={s.statsGrid}>
-          {[
-            { n: '10K+', l: 'Daily Trains',    icon: '🚆' },
-            { n: '500+', l: 'Stations',        icon: '🏛️' },
-            { n: '2M+',  l: 'Passengers/Day',  icon: '👥' },
-            { n: '99%',  l: 'On-time Rate',    icon: '⚡' },
-          ].map((s2, i) => (
-            <div key={i} className="card animate-fadeUp" style={{ textAlign: 'center', animationDelay: `${i * 0.1}s` }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>{s2.icon}</div>
-              <div style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, color: 'var(--accent)' }}>{s2.n}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s2.l}</div>
+                    <button
+                      type="button"
+                      style={styles.swapBtn}
+                      onClick={() => setForm((value) => ({ ...value, from: value.to, to: value.from }))}
+                    >
+                      Swap
+                    </button>
+
+                    <div style={styles.field}>
+                      <label className="form-label">To</label>
+                      <input
+                        placeholder="Destination city"
+                        value={form.to}
+                        onChange={(event) => setForm((value) => ({ ...value, to: event.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <label className="form-label">Travel date</label>
+                      <input
+                        type="date"
+                        min={today}
+                        value={form.date}
+                        onChange={(event) => setForm((value) => ({ ...value, date: event.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <div style={styles.field}>
+                      <label className="form-label">Passengers</label>
+                      <select
+                        value={form.passengers}
+                        onChange={(event) => setForm((value) => ({ ...value, passengers: event.target.value }))}
+                      >
+                        {[1, 2, 3, 4, 5, 6].map((count) => (
+                          <option key={count} value={count}>
+                            {count} Passenger{count > 1 ? 's' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ width: '100%', marginTop: 18, padding: '15px 22px', fontSize: 14 }}
+                  >
+                    Search Trains
+                  </button>
+                </form>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
+
+        <section style={{ marginTop: 44 }}>
+          <div style={styles.sectionHead}>
+            <div>
+              <div className="section-kicker">Popular Routes</div>
+              <h2 className="section-title">Frequently booked journeys</h2>
+            </div>
+            <p className="muted" style={{ maxWidth: 420 }}>
+              Quick picks for the corridors travelers search most often across the network.
+            </p>
+          </div>
+
+          <div style={styles.routeGrid}>
+            {POPULAR.map((route, index) => (
+              <button
+                key={`${route.from}-${route.to}`}
+                className="animate-fadeUp"
+                style={{ ...styles.routeCard, animationDelay: `${index * 0.08}s` }}
+                onClick={() => setForm((value) => ({ ...value, from: route.from, to: route.to }))}
+              >
+                <div style={styles.routeHeader}>
+                  <span style={styles.routeCity}>{route.from}</span>
+                  <span style={styles.routeArrow}>to</span>
+                  <span style={styles.routeCity}>{route.to}</span>
+                </div>
+                <div style={styles.routeTag}>{route.tag}</div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section style={{ marginTop: 44 }}>
+          <div className="card" style={styles.assuranceCard}>
+            <div>
+              <div className="section-kicker">Why RailYatra</div>
+              <h2 className="section-title" style={{ fontSize: 'clamp(24px, 3vw, 30px)' }}>
+                Built like a real booking product, not a classroom demo
+              </h2>
+            </div>
+            <div style={styles.assuranceGrid}>
+              {[
+                ['Clean search flow', 'Route, date, and passenger count are surfaced immediately and clearly.'],
+                ['Fare clarity', 'Class pricing and booking totals are easier to compare before checkout.'],
+                ['Booking management', 'Travel history, PNR, passenger details, and cancellation actions stay organized.'],
+              ].map(([title, text]) => (
+                <div key={title} style={styles.assuranceItem}>
+                  <h3 style={styles.assuranceTitle}>{title}</h3>
+                  <p className="muted" style={{ fontSize: 14 }}>
+                    {text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )
 }
 
-const s = {
-  hero:     { position: 'relative', padding: '80px 0 60px', overflow: 'hidden' },
-  glow:     { position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)', width: 700, height: 400, background: 'radial-gradient(ellipse, rgba(245,166,35,0.08) 0%, transparent 70%)', pointerEvents: 'none' },
-  tag:      { display: 'inline-block', fontSize: 12, color: 'var(--accent)', background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.2)', borderRadius: 20, padding: '5px 14px', marginBottom: 20, letterSpacing: '0.06em' },
-  title:    { fontFamily: 'var(--font-head)', fontSize: 'clamp(40px,7vw,72px)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.03em', marginBottom: 16 },
-  subtitle: { fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.7 },
-  fields:   { display: 'grid', gridTemplateColumns: '1fr auto 1fr 1fr auto', gap: 12, alignItems: 'end' },
-  field:    { display: 'flex', flexDirection: 'column', gap: 6 },
-  label:    { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-head)' },
-  swapBtn:  { background: 'var(--bg)', border: '1.5px solid var(--border)', color: 'var(--text-muted)', borderRadius: 8, width: 40, height: 42, fontSize: 18, cursor: 'pointer', alignSelf: 'end' },
-  sectionTitle: { fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 700, margin: '48px 0 16px' },
-  routeGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 12, marginBottom: 40 },
-  routeCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.2s', fontSize: 14 },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, paddingBottom: 60 },
+const styles = {
+  heroWrap: {
+    paddingTop: 12,
+  },
+  heroCard: {
+    padding: 30,
+    borderRadius: 36,
+    overflow: 'hidden',
+  },
+  heroGrid: {
+    position: 'relative',
+    zIndex: 1,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gap: 26,
+    alignItems: 'stretch',
+  },
+  title: {
+    maxWidth: 620,
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(40px, 6vw, 68px)',
+    lineHeight: 1.02,
+    letterSpacing: '-0.05em',
+  },
+  subtitle: {
+    maxWidth: 580,
+    marginTop: 18,
+    fontSize: 17,
+    color: 'var(--text-muted)',
+  },
+  heroStats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+    gap: 12,
+    marginTop: 30,
+  },
+  heroStat: {
+    padding: 16,
+    borderRadius: 22,
+    border: '1px solid rgba(18, 49, 73, 0.1)',
+    background: 'rgba(255, 255, 255, 0.62)',
+  },
+  heroStatValue: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 24,
+    fontWeight: 800,
+    letterSpacing: '-0.03em',
+  },
+  heroStatLabel: {
+    fontSize: 13,
+    color: 'var(--text-muted)',
+    marginTop: 4,
+  },
+  searchShell: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    borderRadius: 30,
+    padding: 24,
+    background: 'linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,252,245,0.84))',
+    border: '1px solid rgba(18, 49, 73, 0.1)',
+    boxShadow: '0 26px 60px rgba(18, 49, 73, 0.12)',
+  },
+  searchTop: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    marginBottom: 20,
+  },
+  searchLabel: {
+    color: 'var(--accent-strong)',
+    fontSize: 11,
+    fontWeight: 800,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    fontFamily: 'var(--font-head)',
+    marginBottom: 6,
+  },
+  searchTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 28,
+    lineHeight: 1.05,
+    letterSpacing: '-0.03em',
+  },
+  liveChip: {
+    padding: '9px 12px',
+    borderRadius: 999,
+    background: 'rgba(31, 143, 99, 0.12)',
+    color: 'var(--green)',
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  fields: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto 1fr',
+    gap: 12,
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  swapBtn: {
+    alignSelf: 'end',
+    height: 48,
+    padding: '0 16px',
+    borderRadius: 16,
+    border: '1.5px solid rgba(18, 49, 73, 0.12)',
+    background: 'rgba(255, 255, 255, 0.88)',
+    color: 'var(--text)',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-head)',
+    fontWeight: 700,
+  },
+  sectionHead: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'end',
+    gap: 18,
+    flexWrap: 'wrap',
+    marginBottom: 18,
+  },
+  routeGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 14,
+  },
+  routeCard: {
+    textAlign: 'left',
+    padding: 22,
+    borderRadius: 26,
+    border: '1px solid rgba(18, 49, 73, 0.1)',
+    background: 'rgba(255, 252, 245, 0.78)',
+    boxShadow: 'var(--shadow)',
+    cursor: 'pointer',
+    transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+  },
+  routeHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  routeCity: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    fontWeight: 700,
+  },
+  routeArrow: {
+    color: 'var(--accent-strong)',
+    fontSize: 12,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  routeTag: {
+    color: 'var(--text-muted)',
+    fontSize: 14,
+  },
+  assuranceCard: {
+    padding: 28,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: 20,
+  },
+  assuranceGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 14,
+  },
+  assuranceItem: {
+    padding: 18,
+    borderRadius: 22,
+    background: 'rgba(255, 255, 255, 0.68)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  assuranceTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    lineHeight: 1.2,
+    marginBottom: 8,
+  },
 }

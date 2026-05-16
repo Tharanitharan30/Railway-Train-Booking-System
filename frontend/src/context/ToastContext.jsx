@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useCallback, useContext, useState } from 'react'
 
 const ToastContext = createContext()
 
@@ -7,18 +7,18 @@ export const ToastProvider = ({ children }) => {
 
   const addToast = useCallback((message, type = 'success') => {
     const id = Date.now()
-    setToasts(prev => [...prev, { id, message, type }])
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500)
+    setToasts((current) => [...current, { id, message, type }])
+    setTimeout(() => setToasts((current) => current.filter((toast) => toast.id !== id)), 3500)
   }, [])
 
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
       <div>
-        {toasts.map(t => (
-          <div key={t.id} className={`toast toast-${t.type}`}>
-            <span style={{ fontSize: 18 }}>{t.type === 'success' ? '✓' : '✕'}</span>
-            <span>{t.message}</span>
+        {toasts.map((toast) => (
+          <div key={toast.id} className={`toast toast-${toast.type}`}>
+            <span style={{ fontSize: 18, fontWeight: 800 }}>{toast.type === 'success' ? 'OK' : '!'}</span>
+            <span>{toast.message}</span>
           </div>
         ))}
       </div>

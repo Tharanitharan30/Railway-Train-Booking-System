@@ -1,218 +1,622 @@
 import { useState } from 'react'
-import { useParams, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import api from '../api/axios'
 import { useToast } from '../context/ToastContext'
 
 export default function BookingForm() {
-  const { trainId }   = useParams()
-  const { state }     = useLocation()
-  const navigate      = useNavigate()
-  const { addToast }  = useToast()
+  const { trainId } = useParams()
+  const { state } = useLocation()
+  const navigate = useNavigate()
+  const { addToast } = useToast()
 
-  const train       = state?.train
+  const train = state?.train
   const journeyDate = state?.journeyDate
 
   const [travelClass, setTravelClass] = useState('Sleeper')
-  const [passengers, setPassengers]   = useState([{ name: '', age: '', gender: 'Male' }])
-  const [loading, setLoading]         = useState(false)
-  const [booked, setBooked]           = useState(null)
+  const [passengers, setPassengers] = useState([{ name: '', age: '', gender: 'Male' }])
+  const [loading, setLoading] = useState(false)
+  const [booked, setBooked] = useState(null)
 
-  if (!train) return (
-    <div className="page"><div className="container" style={{ textAlign: 'center', paddingTop: 80 }}>
-      <h2>No train selected</h2>
-      <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => navigate('/')}>Go Home</button>
-    </div></div>
-  )
+  if (!train) {
+    return (
+      <div className="page">
+        <div className="container">
+          <div className="card" style={styles.emptyState}>
+            <div className="section-kicker">Booking unavailable</div>
+            <h1 style={styles.emptyTitle}>No train has been selected for this booking.</h1>
+            <p className="muted">Return to the home page and search for a train first.</p>
+            <button type="button" className="btn btn-primary" style={{ marginTop: 18 }} onClick={() => navigate('/')}>
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  const classInfo    = train.classes?.find(c => c.type === travelClass)
-  const pricePerSeat = classInfo?.price || train.price || 0
-  const total        = pricePerSeat * passengers.length
+  const selectedClass = train.classes?.find((item) => item.type === travelClass)
+  const pricePerSeat = selectedClass?.price || train.price || 0
+  const baseFare = pricePerSeat * passengers.length
+  const serviceFee = Math.round(baseFare * 0.02)
+  const gst = Math.round(baseFare * 0.05)
+  const total = baseFare + serviceFee + gst
 
-  const addPassenger    = () => passengers.length < 6 && setPassengers(p => [...p, { name: '', age: '', gender: 'Male' }])
-  const removePassenger = (i) => passengers.length > 1 && setPassengers(p => p.filter((_, idx) => idx !== i))
-  const updatePassenger = (i, key, val) => setPassengers(p => p.map((ps, idx) => idx === i ? { ...ps, [key]: val } : ps))
+  const addPassenger = () => {
+    if (passengers.length < 6) {
+      setPassengers((current) => [...current, { name: '', age: '', gender: 'Male' }])
+    }
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const removePassenger = (index) => {
+    if (passengers.length > 1) {
+      setPassengers((current) => current.filter((_, passengerIndex) => passengerIndex !== index))
+    }
+  }
+
+  const updatePassenger = (index, key, value) => {
+    setPassengers((current) =>
+      current.map((passenger, passengerIndex) =>
+        passengerIndex === index ? { ...passenger, [key]: value } : passenger
+      )
+    )
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setLoading(true)
+
     try {
-      const res = await api.post('/bookings', { trainId, journeyDate, passengers, travelClass })
-      setBooked(res.data)
-      addToast('Booking confirmed! 🎉', 'success')
-    } catch (err) {
-      addToast(err.response?.data?.message || 'Booking failed', 'error')
+      const response = await api.post('/bookings', { trainId, journeyDate, passengers, travelClass })
+      setBooked(response.data)
+      addToast('Booking confirmed successfully', 'success')
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Booking failed', 'error')
     } finally {
       setLoading(false)
     }
   }
 
-  // ── Confirmation Screen ──
-  if (booked) return (
-    <div className="page"><div className="container">
-      <div className="animate-fadeUp" style={s.confirmed}>
-        <div style={s.checkIcon}>✓</div>
-        <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800 }}>Booking Confirmed!</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Your ticket has been booked successfully.</p>
+  if (booked) {
+    return (
+      <div className="page">
+        <div className="container">
+          <div className="card animate-fadeUp" style={styles.confirmCard}>
+            <div style={styles.confirmBadge}>Booking Confirmed</div>
+            <h1 style={styles.confirmTitle}>Your ticket is ready.</h1>
+            <p className="muted" style={{ maxWidth: 520 }}>
+              Your booking has been saved with a live PNR reference and a full fare summary below.
+            </p>
 
-        <div style={s.pnrBox}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>PNR Number</span>
-          <span style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, color: 'var(--accent)', letterSpacing: '0.05em' }}>{booked.pnrNumber}</span>
-        </div>
-
-        <div className="card" style={{ width: '100%', textAlign: 'left' }}>
-          {[
-            ['Train',      train.name],
-            ['Route',      `${train.from} → ${train.to}`],
-            ['Date',       new Date(booked.journeyDate).toDateString()],
-            ['Class',      booked.class],
-            ['Passengers', booked.passengers.length],
-            ['Total Paid', `₹${booked.totalAmount}`],
-          ].map(([k, v]) => (
-            <div key={k} style={s.confRow}>
-              <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{k}</span>
-              <strong style={{ color: k === 'Total Paid' ? 'var(--accent)' : 'var(--text)', fontFamily: k === 'Total Paid' ? 'var(--font-head)' : 'inherit', fontSize: k === 'Total Paid' ? 18 : 14 }}>{v}</strong>
+            <div style={styles.confirmPnr}>
+              <span style={styles.confirmPnrLabel}>PNR Number</span>
+              <span style={styles.confirmPnrValue}>{booked.pnrNumber}</span>
             </div>
-          ))}
-        </div>
 
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button className="btn btn-secondary" onClick={() => navigate('/my-bookings')}>View My Bookings</button>
-          <button className="btn btn-primary"   onClick={() => navigate('/')}>Book Another</button>
-        </div>
-      </div>
-    </div></div>
-  )
-
-  // ── Booking Form ──
-  return (
-    <div className="page"><div className="container">
-      <div style={s.layout}>
-
-        {/* Main */}
-        <div>
-          <h1 style={s.pageTitle} className="animate-fadeUp">Complete Booking</h1>
-
-          {/* Train Summary */}
-          <div className="card animate-fadeUp" style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, fontFamily: 'var(--font-head)', marginBottom: 2 }}>{train.trainNumber}</div>
-                <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-head)' }}>{train.name}</div>
-              </div>
-              <span className="badge badge-green">Available</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div><div style={{ fontFamily: 'var(--font-head)', fontSize: 24, fontWeight: 800 }}>{train.departureTime}</div><div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{train.from}</div></div>
-              <span style={{ color: 'var(--text-dim)', fontSize: 20 }}>─── 🚆 ───</span>
-              <div style={{ textAlign: 'right' }}><div style={{ fontFamily: 'var(--font-head)', fontSize: 24, fontWeight: 800 }}>{train.arrivalTime}</div><div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{train.to}</div></div>
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>📅 {new Date(journeyDate).toDateString()}</div>
-          </div>
-
-          {/* Class Selection */}
-          <div style={{ marginBottom: 24 }} className="animate-fadeUp">
-            <h2 style={s.sectionTitle}>Select Class</h2>
-            <div style={s.classGrid}>
-              {(train.classes?.length > 0
-                ? train.classes
-                : ['Sleeper','3AC','2AC','1AC'].map(t => ({ type: t, price: train.price }))
-              ).map(cls => (
-                <button key={cls.type} type="button"
-                  style={{ ...s.classBtn, ...(travelClass === cls.type ? s.classBtnActive : {}) }}
-                  onClick={() => setTravelClass(cls.type)}>
-                  <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: 13, color: travelClass === cls.type ? 'var(--accent)' : 'var(--text)' }}>{cls.type}</span>
-                  <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: 18 }}>₹{cls.price}</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>per person</span>
-                </button>
+            <div style={styles.confirmGrid}>
+              {[
+                ['Train', train.name],
+                ['Route', `${train.from} to ${train.to}`],
+                ['Date', new Date(booked.journeyDate).toDateString()],
+                ['Class', booked.class],
+                ['Passengers', booked.passengers.length],
+                ['Total Paid', `Rs ${booked.totalAmount}`],
+              ].map(([label, value]) => (
+                <div key={label} style={styles.confirmItem}>
+                  <div style={styles.confirmItemLabel}>{label}</div>
+                  <div style={styles.confirmItemValue}>{value}</div>
+                </div>
               ))}
             </div>
-          </div>
 
-          {/* Passengers */}
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 24 }} className="animate-fadeUp">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h2 style={s.sectionTitle}>Passenger Details</h2>
-                {passengers.length < 6 && (
-                  <button type="button" className="btn btn-secondary" style={{ padding: '7px 14px', fontSize: 13 }} onClick={addPassenger}>+ Add</button>
-                )}
+            <div style={styles.confirmActions}>
+              <button type="button" className="btn btn-secondary" onClick={() => navigate('/my-bookings')}>
+                View My Bookings
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => navigate('/')}>
+                Book Another Trip
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const availableClasses =
+    train.classes?.length > 0
+      ? train.classes
+      : ['Sleeper', '3AC', '2AC', '1AC'].map((type) => ({ type, price: train.price }))
+
+  return (
+    <div className="page">
+      <div className="container">
+        <div style={styles.layout}>
+          <div>
+            <section className="card panel-highlight animate-fadeUp" style={styles.headerCard}>
+              <div style={styles.headerTop}>
+                <div>
+                  <div className="section-kicker">Complete Booking</div>
+                  <h1 style={styles.pageTitle}>{train.name}</h1>
+                  <p className="muted" style={{ marginTop: 10 }}>
+                    {train.trainNumber} · {new Date(journeyDate).toDateString()}
+                  </p>
+                </div>
+                <span className="badge badge-green">Seats available</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {passengers.map((p, i) => (
-                  <div key={i} style={s.passengerCard}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-head)', letterSpacing: '0.06em' }}>PASSENGER {i + 1}</span>
-                      {i > 0 && <button type="button" onClick={() => removePassenger(i)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }}>✕</button>}
+              <div style={styles.routeCard}>
+                <div>
+                  <div style={styles.routeTime}>{train.departureTime}</div>
+                  <div style={styles.routeStation}>{train.from}</div>
+                </div>
+                <div style={styles.routeMiddle}>
+                  <div style={styles.routeLine} />
+                  <span style={styles.routePill}>Direct rail connection</span>
+                  <div style={styles.routeLine} />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={styles.routeTime}>{train.arrivalTime}</div>
+                  <div style={styles.routeStation}>{train.to}</div>
+                </div>
+              </div>
+            </section>
+
+            <section className="card animate-fadeUp" style={{ ...styles.sectionCard, animationDelay: '0.05s' }}>
+              <div style={styles.sectionHeader}>
+                <div>
+                  <div className="section-kicker">Travel Class</div>
+                  <h2 style={styles.sectionTitle}>Choose your cabin</h2>
+                </div>
+              </div>
+
+              <div style={styles.classGrid}>
+                {availableClasses.map((item) => (
+                  <button
+                    key={item.type}
+                    type="button"
+                    onClick={() => setTravelClass(item.type)}
+                    style={{
+                      ...styles.classButton,
+                      ...(travelClass === item.type ? styles.classButtonActive : {}),
+                    }}
+                  >
+                    <div style={styles.classButtonTop}>
+                      <span style={styles.classType}>{item.type}</span>
+                      <span style={styles.classPrice}>Rs {item.price}</span>
                     </div>
-                    <div style={s.passengerFields}>
-                      <div style={s.pField}>
-                        <label style={s.label}>Full Name *</label>
-                        <input placeholder="As on ID" value={p.name} onChange={e => updatePassenger(i, 'name', e.target.value)} required />
+                    <div className="muted" style={{ fontSize: 13 }}>
+                      Comfortable travel for your selected journey.
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <form onSubmit={handleSubmit}>
+              <section className="card animate-fadeUp" style={{ ...styles.sectionCard, animationDelay: '0.1s' }}>
+                <div style={styles.sectionHeader}>
+                  <div>
+                    <div className="section-kicker">Passengers</div>
+                    <h2 style={styles.sectionTitle}>Traveler details</h2>
+                  </div>
+
+                  {passengers.length < 6 && (
+                    <button type="button" className="btn btn-secondary" onClick={addPassenger}>
+                      Add Passenger
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {passengers.map((passenger, index) => (
+                    <div key={index} style={styles.passengerCard}>
+                      <div style={styles.passengerTop}>
+                        <div>
+                          <div style={styles.passengerLabel}>Passenger {index + 1}</div>
+                          <div className="muted" style={{ fontSize: 13 }}>
+                            Enter name, age, and gender exactly as required.
+                          </div>
+                        </div>
+
+                        {index > 0 && (
+                          <button type="button" style={styles.removeButton} onClick={() => removePassenger(index)}>
+                            Remove
+                          </button>
+                        )}
                       </div>
-                      <div style={s.pField}>
-                        <label style={s.label}>Age *</label>
-                        <input type="number" placeholder="Age" min="1" max="120" value={p.age} onChange={e => updatePassenger(i, 'age', e.target.value)} required />
-                      </div>
-                      <div style={s.pField}>
-                        <label style={s.label}>Gender *</label>
-                        <select value={p.gender} onChange={e => updatePassenger(i, 'gender', e.target.value)}>
-                          <option>Male</option><option>Female</option><option>Other</option>
-                        </select>
+
+                      <div style={styles.passengerFields}>
+                        <div style={styles.passengerField}>
+                          <label className="form-label">Full name</label>
+                          <input
+                            placeholder="As shown on ID"
+                            value={passenger.name}
+                            onChange={(event) => updatePassenger(index, 'name', event.target.value)}
+                            required
+                          />
+                        </div>
+
+                        <div style={styles.passengerField}>
+                          <label className="form-label">Age</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="120"
+                            placeholder="Age"
+                            value={passenger.age}
+                            onChange={(event) => updatePassenger(index, 'age', event.target.value)}
+                            required
+                          />
+                        </div>
+
+                        <div style={styles.passengerField}>
+                          <label className="form-label">Gender</label>
+                          <select
+                            value={passenger.gender}
+                            onChange={(event) => updatePassenger(index, 'gender', event.target.value)}
+                          >
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </section>
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '16px 22px', marginTop: 18 }}
+                disabled={loading}
+              >
+                {loading ? <><span className="loader" /> Processing booking</> : `Pay Rs ${total} and Confirm`}
+              </button>
+            </form>
+          </div>
+
+          <aside>
+            <div className="card animate-fadeUp" style={styles.sidebarCard}>
+              <div className="section-kicker">Fare Summary</div>
+              <h2 style={styles.sidebarTitle}>Trip total</h2>
+
+              <div style={styles.summaryList}>
+                {[
+                  [`Base fare x ${passengers.length}`, `Rs ${baseFare}`],
+                  ['Service fee', `Rs ${serviceFee}`],
+                  ['GST', `Rs ${gst}`],
+                  ['Class selected', travelClass],
+                ].map(([label, value]) => (
+                  <div key={label} style={styles.summaryRow}>
+                    <span className="muted">{label}</span>
+                    <strong>{value}</strong>
                   </div>
                 ))}
               </div>
-            </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 15, fontSize: 16 }} disabled={loading}>
-              {loading ? <><span className="loader" /> Processing...</> : `Pay ₹${Math.round(total * 1.07)} & Confirm →`}
-            </button>
-          </form>
-        </div>
-
-        {/* Sidebar */}
-        <div style={{ minWidth: 300 }}>
-          <div className="card" style={{ position: 'sticky', top: 88 }}>
-            <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 700, marginBottom: 16 }}>Fare Summary</h3>
-            {[
-              ['Base Fare (×' + passengers.length + ')', `₹${total}`],
-              ['Service Fee',                            `₹${Math.round(total * 0.02)}`],
-              ['GST (5%)',                               `₹${Math.round(total * 0.05)}`],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--text-muted)', marginBottom: 10 }}>
-                <span>{k}</span><span>{v}</span>
+              <div style={styles.totalBox}>
+                <span>Total payable</span>
+                <span style={styles.totalValue}>Rs {total}</span>
               </div>
-            ))}
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '12px 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600 }}>Total</span>
-              <span style={{ fontFamily: 'var(--font-head)', fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>₹{Math.round(total * 1.07)}</span>
+
+              <div style={styles.secureNote}>
+                Secure payment flow with fare breakdown visible before confirmation.
+              </div>
             </div>
-            <div style={{ marginTop: 16, padding: 12, background: 'rgba(45,212,160,0.05)', border: '1px solid rgba(45,212,160,0.1)', borderRadius: 8, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              🔒 Secure payment. Free cancellation up to 4 hours before departure.
-            </div>
-          </div>
+          </aside>
         </div>
       </div>
-    </div></div>
+    </div>
   )
 }
 
-const s = {
-  layout:         { display: 'grid', gridTemplateColumns: '1fr 300px', gap: 28, alignItems: 'start' },
-  pageTitle:      { fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 24 },
-  sectionTitle:   { fontFamily: 'var(--font-head)', fontSize: 17, fontWeight: 700, marginBottom: 0 },
-  classGrid:      { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 },
-  classBtn:       { background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 8, padding: '14px 10px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, transition: 'all 0.2s' },
-  classBtnActive: { borderColor: 'var(--accent)', background: 'rgba(245,166,35,0.06)' },
-  passengerCard:  { background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12, padding: 18 },
-  passengerFields:{ display: 'grid', gridTemplateColumns: '1fr 100px 120px', gap: 12 },
-  pField:         { display: 'flex', flexDirection: 'column', gap: 5 },
-  label:          { fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'var(--font-head)' },
-  confirmed:      { maxWidth: 520, margin: '40px auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 },
-  checkIcon:      { width: 72, height: 72, borderRadius: '50%', background: 'rgba(45,212,160,0.12)', border: '2px solid var(--green)', color: 'var(--green)', fontSize: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 },
-  pnrBox:         { background: 'var(--bg-card)', border: '1px solid var(--border-lit)', borderRadius: 12, padding: '16px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
-  confRow:        { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' },
+const styles = {
+  emptyState: {
+    padding: '44px 24px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    marginTop: 14,
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(30px, 4vw, 42px)',
+    lineHeight: 1.08,
+    letterSpacing: '-0.04em',
+  },
+  confirmCard: {
+    maxWidth: 920,
+    margin: '0 auto',
+    textAlign: 'center',
+    padding: 34,
+    borderRadius: 34,
+  },
+  confirmBadge: {
+    display: 'inline-flex',
+    padding: '8px 14px',
+    borderRadius: 999,
+    background: 'rgba(31, 143, 99, 0.12)',
+    color: 'var(--green)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  },
+  confirmTitle: {
+    marginTop: 16,
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(38px, 6vw, 56px)',
+    lineHeight: 1.02,
+    letterSpacing: '-0.05em',
+  },
+  confirmPnr: {
+    display: 'inline-flex',
+    flexDirection: 'column',
+    gap: 6,
+    marginTop: 24,
+    padding: '18px 30px',
+    borderRadius: 24,
+    background: 'rgba(255,255,255,0.82)',
+    border: '1px solid rgba(18, 49, 73, 0.1)',
+  },
+  confirmPnrLabel: {
+    color: 'var(--text-dim)',
+    fontFamily: 'var(--font-head)',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+  },
+  confirmPnrValue: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 30,
+    fontWeight: 800,
+    color: 'var(--accent-strong)',
+    letterSpacing: '0.04em',
+  },
+  confirmGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 12,
+    marginTop: 26,
+    textAlign: 'left',
+  },
+  confirmItem: {
+    padding: 18,
+    borderRadius: 22,
+    background: 'rgba(255,255,255,0.78)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  confirmItemLabel: {
+    fontSize: 11,
+    color: 'var(--text-dim)',
+    fontFamily: 'var(--font-head)',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  confirmItemValue: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    fontWeight: 700,
+    lineHeight: 1.3,
+  },
+  confirmActions: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+    marginTop: 26,
+  },
+  layout: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: 22,
+    alignItems: 'start',
+  },
+  headerCard: {
+    padding: 28,
+    borderRadius: 34,
+    marginBottom: 18,
+  },
+  headerTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'start',
+    gap: 18,
+    flexWrap: 'wrap',
+  },
+  pageTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(34px, 5vw, 48px)',
+    lineHeight: 1.02,
+    letterSpacing: '-0.05em',
+  },
+  routeCard: {
+    marginTop: 24,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+    gap: 18,
+    alignItems: 'center',
+    padding: 22,
+    borderRadius: 26,
+    background: 'rgba(255,255,255,0.72)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  routeTime: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 'clamp(28px, 4vw, 36px)',
+    fontWeight: 800,
+    lineHeight: 1,
+    letterSpacing: '-0.04em',
+  },
+  routeStation: {
+    marginTop: 6,
+    color: 'var(--text-muted)',
+  },
+  routeMiddle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  routeLine: {
+    flex: 1,
+    height: 2,
+    background: 'linear-gradient(90deg, rgba(215,137,29,0.8), rgba(18,49,73,0.18))',
+  },
+  routePill: {
+    padding: '7px 10px',
+    borderRadius: 999,
+    background: 'rgba(255,255,255,0.92)',
+    color: 'var(--text-muted)',
+    fontSize: 12,
+    whiteSpace: 'nowrap',
+  },
+  sectionCard: {
+    padding: 26,
+    borderRadius: 30,
+    marginBottom: 18,
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 16,
+    flexWrap: 'wrap',
+    marginBottom: 18,
+  },
+  sectionTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 30,
+    lineHeight: 1.05,
+    letterSpacing: '-0.04em',
+  },
+  classGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 12,
+  },
+  classButton: {
+    textAlign: 'left',
+    padding: 18,
+    borderRadius: 22,
+    border: '1px solid rgba(18, 49, 73, 0.1)',
+    background: 'rgba(255,255,255,0.72)',
+    cursor: 'pointer',
+    transition: 'transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease',
+  },
+  classButtonActive: {
+    borderColor: 'rgba(215, 137, 29, 0.45)',
+    boxShadow: '0 14px 28px rgba(199, 120, 16, 0.14)',
+    background: 'linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,243,223,0.88))',
+  },
+  classButtonTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 10,
+    alignItems: 'baseline',
+    marginBottom: 8,
+  },
+  classType: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 18,
+    fontWeight: 700,
+  },
+  classPrice: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 20,
+    fontWeight: 800,
+    color: 'var(--accent-strong)',
+  },
+  passengerCard: {
+    padding: 18,
+    borderRadius: 24,
+    background: 'rgba(255,255,255,0.72)',
+    border: '1px solid rgba(18, 49, 73, 0.08)',
+  },
+  passengerTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 14,
+    flexWrap: 'wrap',
+    alignItems: 'start',
+    marginBottom: 14,
+  },
+  passengerLabel: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 20,
+    fontWeight: 700,
+    lineHeight: 1.1,
+  },
+  removeButton: {
+    border: 'none',
+    background: 'rgba(201, 77, 71, 0.08)',
+    color: 'var(--red)',
+    padding: '10px 14px',
+    borderRadius: 999,
+    cursor: 'pointer',
+    fontWeight: 700,
+  },
+  passengerFields: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: 12,
+  },
+  passengerField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  sidebarCard: {
+    position: 'sticky',
+    top: 98,
+    borderRadius: 30,
+    padding: 24,
+  },
+  sidebarTitle: {
+    fontFamily: 'var(--font-head)',
+    fontSize: 30,
+    lineHeight: 1.04,
+    letterSpacing: '-0.04em',
+  },
+  summaryList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+    marginTop: 18,
+  },
+  summaryRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 12,
+    fontSize: 14,
+  },
+  totalBox: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 20,
+    paddingTop: 18,
+    borderTop: '1px solid rgba(18, 49, 73, 0.1)',
+    fontFamily: 'var(--font-head)',
+    fontWeight: 700,
+  },
+  totalValue: {
+    fontSize: 32,
+    fontWeight: 800,
+    color: 'var(--accent-strong)',
+    letterSpacing: '-0.04em',
+  },
+  secureNote: {
+    marginTop: 20,
+    padding: 16,
+    borderRadius: 20,
+    background: 'rgba(31, 143, 99, 0.08)',
+    color: 'var(--text-muted)',
+    fontSize: 13,
+    lineHeight: 1.6,
+  },
 }
