@@ -299,6 +299,48 @@ select option {
   animation: fadeIn 0.35s ease both;
 }
 
+.skeleton-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line,
+.skeleton-block {
+  background: linear-gradient(135deg, rgba(18, 49, 73, 0.08), rgba(18, 49, 73, 0.14));
+  border-radius: 999px;
+}
+
+.skeleton-line {
+  height: 12px;
+}
+
+.skeleton-line--sm {
+  width: 32%;
+}
+
+.skeleton-line--md {
+  width: 58%;
+}
+
+.skeleton-line--lg {
+  width: 76%;
+  height: 32px;
+}
+
+.skeleton-block {
+  width: 100%;
+  border-radius: 24px;
+}
+
 .loader {
   width: 16px;
   height: 16px;
@@ -605,5 +647,25 @@ select option {
     right: 12px;
     bottom: 12px;
     max-width: none;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
