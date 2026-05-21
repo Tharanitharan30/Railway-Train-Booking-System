@@ -1,6 +1,6 @@
 # Railway Train Booking System
 
-A full-stack train ticket booking application built with React, Express, and MongoDB. Users can search trains, choose travel classes, book tickets, review booking history, and cancel upcoming trips from a clean dashboard.
+A full-stack train ticket booking application built with React, Express, and MongoDB. Users can search trains, choose travel classes, book tickets, manage their profile, review booking history, and cancel upcoming trips from a polished dashboard.
 
 <p align="center">
   <img src="https://skillicons.dev/icons?i=react,express,mongodb" alt="React, Express and MongoDB icons" />
@@ -10,7 +10,8 @@ A full-stack train ticket booking application built with React, Express, and Mon
 
 - Search trains by source, destination, and journey date
 - Book tickets with passenger details and travel class selection
-- View booking history with status, route, fare, and passenger info
+- View a personal profile page with account details and travel insights
+- Review booking history with status, route, fare, and passenger info
 - Cancel upcoming bookings with automatic seat restoration
 - Admin-ready seeded data for quick local testing
 
@@ -24,17 +25,17 @@ A full-stack train ticket booking application built with React, Express, and Mon
 
 ```text
 Railway Train Booking System/
-├── backend/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── seed.js
-│   └── server.js
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   └── package.json
-└── README.md
+|-- backend/
+|   |-- middleware/
+|   |-- models/
+|   |-- routes/
+|   |-- seed.js
+|   `-- server.js
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   `-- package.json
+`-- README.md
 ```
 
 ## Features
@@ -46,6 +47,7 @@ Railway Train Booking System/
 - Select class and add passenger details
 - Confirm bookings and get a PNR number
 - Review bookings in a dashboard view
+- Visit a profile page for account and activity details
 - Cancel valid future bookings
 
 ### Booking Dashboard
@@ -55,6 +57,13 @@ Railway Train Booking System/
 - Journey activity charts
 - Frequent route statistics
 - Skeleton loading states and smooth scrolling
+
+### Profile Page
+
+- Account overview with name, email, role, and status
+- Member-since details from the authenticated user record
+- Travel snapshot cards such as favorite route and trip activity
+- Direct links back to bookings and new search flow
 
 ## Local Setup
 
@@ -114,6 +123,16 @@ After running the seed script:
 
 - Admin: `admin@railyatra.com` / `admin123`
 - User: `user@railyatra.com` / `user123`
+
+## App Routes
+
+- `/` - Home and train search
+- `/login` - User sign-in
+- `/register` - User registration
+- `/search` - Train search results
+- `/book/:trainId` - Booking form
+- `/my-bookings` - Booking dashboard
+- `/profile` - User profile and travel insights
 
 ## API Overview
 
