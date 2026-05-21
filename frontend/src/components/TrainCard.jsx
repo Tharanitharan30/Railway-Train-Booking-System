@@ -79,8 +79,12 @@ export default function TrainCard({ train, journeyDate }) {
 
 const styles = {
   card: {
-    borderRadius: 30,
+    borderRadius: 20,
     padding: 24,
+    background: '#ffffff',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
+    transition: 'transform var(--transition), box-shadow var(--transition)',
   },
   topRow: {
     display: 'flex',
@@ -144,10 +148,10 @@ const styles = {
     fontWeight: 700,
   },
   trackPill: {
-    padding: '6px 10px',
+    padding: '4px 10px',
     borderRadius: 999,
-    background: 'rgba(255,255,255,0.8)',
-    border: '1px solid rgba(18, 49, 73, 0.08)',
+    background: 'var(--bg-hover)',
+    border: '1px solid var(--border)',
     color: 'var(--text-muted)',
   },
   trackLine: {
@@ -156,25 +160,26 @@ const styles = {
     gap: 8,
   },
   trackDot: {
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     borderRadius: '50%',
-    background: 'var(--accent-strong)',
-    boxShadow: '0 0 0 5px rgba(215, 137, 29, 0.12)',
+    background: 'var(--accent)',
+    boxShadow: '0 0 0 4px var(--accent-soft)',
     flexShrink: 0,
   },
   trackRail: {
     flex: 1,
     height: 2,
-    background: 'linear-gradient(90deg, rgba(215,137,29,0.8), rgba(18,49,73,0.18))',
+    background: 'var(--border-strong)',
   },
   trackCenter: {
     padding: '4px 10px',
     borderRadius: 999,
-    background: 'rgba(18, 49, 73, 0.05)',
+    background: 'var(--bg-hover)',
     color: 'var(--text-muted)',
     fontSize: 12,
     whiteSpace: 'nowrap',
+    border: '1px solid var(--border)',
   },
   footer: {
     display: 'flex',
@@ -192,10 +197,10 @@ const styles = {
     flexWrap: 'wrap',
   },
   classChip: {
-    padding: '12px 14px',
-    borderRadius: 18,
-    background: 'rgba(255,255,255,0.8)',
-    border: '1px solid rgba(18, 49, 73, 0.08)',
+    padding: '10px 16px',
+    borderRadius: 12,
+    background: '#ffffff',
+    border: '1px solid var(--border)',
     minWidth: 92,
   },
   classChipLabel: {

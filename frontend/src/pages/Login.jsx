@@ -42,7 +42,7 @@ export default function Login() {
       <div className="container">
         <div className="auth-panel">
           <div className="auth-hero animate-fadeUp">
-            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.08)', color: '#ffdba5', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.1)', color: '#93c5fd', borderColor: 'rgba(255,255,255,0.15)' }}>
               Secure traveler account
             </div>
             <h1 style={styles.heroTitle}>Welcome back to your rail workspace.</h1>
@@ -126,7 +126,7 @@ const styles = {
   heroText: {
     maxWidth: 520,
     marginTop: 14,
-    color: 'rgba(255, 253, 248, 0.76)',
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 16,
   },
   featureTitle: {
@@ -135,7 +135,7 @@ const styles = {
     marginBottom: 6,
   },
   featureText: {
-    color: 'rgba(255, 253, 248, 0.74)',
+    color: 'rgba(255, 255, 255, 0.75)',
     fontSize: 13,
     lineHeight: 1.6,
   },

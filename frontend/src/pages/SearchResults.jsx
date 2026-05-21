@@ -85,16 +85,26 @@ export default function SearchResults() {
         {loading && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
             {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                style={{
-                  height: 220,
-                  borderRadius: 28,
-                  background: 'rgba(255, 252, 245, 0.7)',
-                  border: '1px solid rgba(18, 49, 73, 0.08)',
-                  animation: 'pulse 1.5s ease infinite',
-                }}
-              />
+              <div key={item} className="skeleton-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ width: '40%' }}>
+                    <div className="skeleton-line skeleton-line--sm" />
+                    <div className="skeleton-line skeleton-line--lg" />
+                  </div>
+                  <div style={{ width: '20%', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <div className="skeleton-line skeleton-line--sm" style={{ width: '80%' }} />
+                    <div className="skeleton-line skeleton-line--md" style={{ width: '100%' }} />
+                  </div>
+                </div>
+                <div className="skeleton-block" style={{ height: 60, marginBottom: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="skeleton-line" style={{ width: 80, height: 32, borderRadius: 16 }} />
+                    <div className="skeleton-line" style={{ width: 80, height: 32, borderRadius: 16 }} />
+                  </div>
+                  <div className="skeleton-line" style={{ width: 120, height: 42, borderRadius: 8, marginBottom: 0 }} />
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -131,8 +141,11 @@ export default function SearchResults() {
 
 const styles = {
   heroCard: {
-    padding: 28,
-    borderRadius: 34,
+    padding: 32,
+    borderRadius: 24,
+    background: '#ffffff',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
   },
   heroTop: {
     display: 'flex',
@@ -142,10 +155,11 @@ const styles = {
     flexWrap: 'wrap',
   },
   routeTitle: {
+    color: 'var(--text)',
     fontFamily: 'var(--font-head)',
-    fontSize: 'clamp(34px, 5vw, 52px)',
-    lineHeight: 1.02,
-    letterSpacing: '-0.05em',
+    fontSize: 'clamp(32px, 5vw, 48px)',
+    lineHeight: 1.1,
+    letterSpacing: '-0.03em',
   },
   heroStats: {
     display: 'flex',
@@ -153,11 +167,11 @@ const styles = {
     flexWrap: 'wrap',
   },
   heroStat: {
-    minWidth: 160,
-    padding: '16px 18px',
-    borderRadius: 22,
-    background: 'rgba(255,255,255,0.74)',
-    border: '1px solid rgba(18, 49, 73, 0.1)',
+    minWidth: 140,
+    padding: '16px 20px',
+    borderRadius: 16,
+    background: 'var(--bg-hover)',
+    border: '1px solid var(--border)',
   },
   heroStatLabel: {
     fontSize: 11,
@@ -182,17 +196,18 @@ const styles = {
   sortBtn: {
     padding: '10px 16px',
     borderRadius: 999,
-    border: '1px solid rgba(18, 49, 73, 0.12)',
-    background: 'rgba(255, 255, 255, 0.72)',
+    border: '1px solid var(--border)',
+    background: '#ffffff',
     color: 'var(--text)',
     cursor: 'pointer',
     fontWeight: 600,
+    fontSize: 13,
   },
   sortBtnActive: {
-    background: 'linear-gradient(135deg, #e09a32 0%, #c57810 100%)',
-    color: '#fffdf7',
+    background: 'var(--accent)',
+    color: '#ffffff',
     borderColor: 'transparent',
-    boxShadow: '0 10px 24px rgba(199, 120, 16, 0.2)',
+    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
   },
   emptyState: {
     marginTop: 24,
@@ -201,14 +216,14 @@ const styles = {
   },
   emptyBadge: {
     display: 'inline-flex',
-    padding: '8px 12px',
+    padding: '6px 12px',
     borderRadius: 999,
-    background: 'var(--accent-soft)',
-    color: 'var(--accent-strong)',
+    background: 'rgba(239, 68, 68, 0.1)',
+    color: 'var(--red)',
     fontFamily: 'var(--font-head)',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
-    letterSpacing: '0.08em',
+    letterSpacing: '0.05em',
     textTransform: 'uppercase',
   },
   emptyTitle: {

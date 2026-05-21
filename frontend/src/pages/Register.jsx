@@ -55,7 +55,7 @@ export default function Register() {
       <div className="container">
         <div className="auth-panel">
           <div className="auth-hero animate-fadeUp">
-            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.08)', color: '#ffdba5', borderColor: 'rgba(255,255,255,0.1)' }}>
+            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.1)', color: '#93c5fd', borderColor: 'rgba(255,255,255,0.15)' }}>
               Create your traveler profile
             </div>
             <h1 style={styles.heroTitle}>Start booking with a sharper, more trustworthy rail experience.</h1>
@@ -135,7 +135,7 @@ const styles = {
   heroText: {
     maxWidth: 520,
     marginTop: 14,
-    color: 'rgba(255, 253, 248, 0.76)',
+    color: 'rgba(255, 255, 255, 0.85)',
     fontSize: 16,
   },
   benefitsWrap: {
@@ -150,17 +150,17 @@ const styles = {
     alignItems: 'center',
     gap: 12,
     padding: '14px 16px',
-    borderRadius: 18,
-    background: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
-    color: 'rgba(255, 253, 248, 0.88)',
+    borderRadius: 16,
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   benefitDot: {
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     borderRadius: '50%',
-    background: '#ffdba5',
-    boxShadow: '0 0 0 6px rgba(255, 219, 165, 0.14)',
+    background: '#60a5fa',
+    boxShadow: '0 0 0 4px rgba(96, 165, 250, 0.15)',
     flexShrink: 0,
   },
   formTitle: {
