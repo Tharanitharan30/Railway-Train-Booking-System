@@ -55,7 +55,7 @@ export default function Register() {
       <div className="container">
         <div className="auth-panel">
           <div className="auth-hero animate-fadeUp">
-            <div className="section-kicker" style={{ background: 'rgba(255,255,255,0.1)', color: '#93c5fd', borderColor: 'rgba(255,255,255,0.15)' }}>
+            <div className="section-kicker" style={{ background: 'var(--bg-hover)', color: 'var(--accent)', padding: '6px 12px', borderRadius: 999 }}>
               Create your traveler profile
             </div>
             <h1 style={styles.heroTitle}>Start booking with a sharper, more trustworthy rail experience.</h1>
@@ -135,7 +135,7 @@ const styles = {
   heroText: {
     maxWidth: 520,
     marginTop: 14,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'var(--text-muted)',
     fontSize: 16,
   },
   benefitsWrap: {
@@ -151,9 +151,9 @@ const styles = {
     gap: 12,
     padding: '14px 16px',
     borderRadius: 16,
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    color: 'rgba(255, 255, 255, 0.85)',
+    background: 'var(--bg-hover)',
+    border: '1px solid var(--border)',
+    color: 'var(--text)',
   },
   benefitDot: {
     width: 8,

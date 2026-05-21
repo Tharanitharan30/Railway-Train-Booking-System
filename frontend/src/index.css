@@ -5,23 +5,23 @@
 }
 
 :root {
-  --bg: #f8fafc;
-  --bg-soft: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.95);
+  --bg: #ffffff;
+  --bg-soft: #f8fafc;
+  --bg-card: #ffffff;
   --bg-card-strong: #ffffff;
   --bg-hover: #f1f5f9;
   --bg-dark: #0f172a;
-  --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.15);
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
   --accent: #2563eb;
   --accent-strong: #1d4ed8;
   --accent-soft: rgba(37, 99, 235, 0.1);
   --text: #0f172a;
   --text-muted: #475569;
   --text-dim: #94a3b8;
-  --green: #10b981;
-  --red: #ef4444;
-  --blue: #3b82f6;
+  --green: #2563eb;
+  --red: #2563eb;
+  --blue: #2563eb;
   --font-head: 'Sora', 'Inter', sans-serif;
   --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
   --radius: 16px;
@@ -40,9 +40,6 @@ html {
 body {
   min-height: 100vh;
   background-color: var(--bg);
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.04), transparent 30%),
-    radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.03), transparent 30%);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
@@ -182,18 +179,18 @@ textarea::placeholder {
 }
 
 .badge-green {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--green);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .badge-red {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--red);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .badge-orange {
-  background: rgba(245, 158, 11, 0.1);
-  color: #d97706;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .badge-blue {
@@ -244,7 +241,7 @@ textarea::placeholder {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  background: var(--accent);
 }
 
 @keyframes fadeUp {
@@ -471,10 +468,12 @@ textarea::placeholder {
 }
 
 .auth-shell {
-  min-height: calc(100vh - 70px);
-  display: grid;
-  place-items: center;
-  padding: 40px 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .auth-panel {
@@ -515,8 +514,9 @@ textarea::placeholder {
 .auth-feature {
   padding: 20px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-form {

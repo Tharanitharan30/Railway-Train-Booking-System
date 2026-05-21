@@ -31,7 +31,7 @@ export default function Home() {
         <section style={styles.heroWrap}>
           <div className="card panel-highlight animate-fadeUp" style={styles.heroCard}>
             <div style={styles.heroGrid}>
-              <div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div className="section-kicker">Railway Booking Reimagined</div>
                 <h1 style={styles.title}>
                   Book India&apos;s rail journeys with a cleaner, faster, more confident flow.
@@ -40,15 +40,6 @@ export default function Home() {
                   Search routes, compare class fares, and manage bookings in one polished experience
                   built for everyday travelers.
                 </p>
-
-                <div style={styles.heroStats}>
-                  {HIGHLIGHTS.map((item) => (
-                    <div key={item.label} style={styles.heroStat}>
-                      <div style={styles.heroStatValue}>{item.value}</div>
-                      <div style={styles.heroStatLabel}>{item.label}</div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="animate-fadeIn" style={styles.searchShell}>
@@ -60,9 +51,9 @@ export default function Home() {
                   <div style={styles.liveChip}>Live route search</div>
                 </div>
 
-                <form onSubmit={handleSearch}>
-                  <div style={styles.fields}>
-                    <div style={styles.field}>
+                <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={styles.row}>
+                    <div style={{ flex: 1, ...styles.field }}>
                       <label className="form-label">From</label>
                       <input
                         placeholder="Departure city"
@@ -80,7 +71,7 @@ export default function Home() {
                       Swap
                     </button>
 
-                    <div style={styles.field}>
+                    <div style={{ flex: 1, ...styles.field }}>
                       <label className="form-label">To</label>
                       <input
                         placeholder="Destination city"
@@ -89,8 +80,10 @@ export default function Home() {
                         required
                       />
                     </div>
+                  </div>
 
-                    <div style={styles.field}>
+                  <div style={styles.row}>
+                    <div style={{ flex: 1, ...styles.field }}>
                       <label className="form-label">Travel date</label>
                       <input
                         type="date"
@@ -101,7 +94,7 @@ export default function Home() {
                       />
                     </div>
 
-                    <div style={styles.field}>
+                    <div style={{ flex: 1, ...styles.field }}>
                       <label className="form-label">Passengers</label>
                       <select
                         value={form.passengers}
@@ -119,11 +112,20 @@ export default function Home() {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    style={{ width: '100%', marginTop: 18, padding: '15px 22px', fontSize: 14 }}
+                    style={{ width: '100%', marginTop: 8, padding: '15px 22px', fontSize: 14 }}
                   >
                     Search Trains
                   </button>
                 </form>
+              </div>
+
+              <div style={styles.heroStats}>
+                {HIGHLIGHTS.map((item) => (
+                  <div key={item.label} style={styles.heroStat}>
+                    <div style={styles.heroStatValue}>{item.value}</div>
+                    <div style={styles.heroStatLabel}>{item.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -200,29 +202,32 @@ const styles = {
   heroGrid: {
     position: 'relative',
     zIndex: 1,
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: 26,
-    alignItems: 'stretch',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 40,
   },
   title: {
-    maxWidth: 620,
+    maxWidth: 760,
+    margin: '0 auto',
     fontFamily: 'var(--font-head)',
-    fontSize: 'clamp(40px, 6vw, 68px)',
-    lineHeight: 1.02,
-    letterSpacing: '-0.05em',
+    fontSize: 'clamp(36px, 6vw, 62px)',
+    lineHeight: 1.05,
+    letterSpacing: '-0.04em',
   },
   subtitle: {
-    maxWidth: 580,
-    marginTop: 18,
+    maxWidth: 620,
+    margin: '18px auto 0',
     fontSize: 17,
     color: 'var(--text-muted)',
   },
   heroStats: {
+    width: '100%',
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: 12,
-    marginTop: 30,
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 16,
+    marginTop: 10,
   },
   heroStat: {
     padding: 20,
@@ -242,9 +247,12 @@ const styles = {
     marginTop: 4,
   },
   searchShell: {
+    width: '100%',
+    maxWidth: 900,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 32,
     borderRadius: 24,
     padding: 32,
     background: '#ffffff',
@@ -256,7 +264,8 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 16,
-    marginBottom: 20,
+    marginBottom: 16,
+    textAlign: 'left',
   },
   searchLabel: {
     color: 'var(--accent-strong)',
@@ -281,10 +290,10 @@ const styles = {
     fontSize: 12,
     fontWeight: 600,
   },
-  fields: {
-    display: 'grid',
-    gridTemplateColumns: '1fr auto 1fr',
+  row: {
+    display: 'flex',
     gap: 12,
+    alignItems: 'flex-end',
   },
   field: {
     display: 'flex',

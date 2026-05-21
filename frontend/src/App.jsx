@@ -9,6 +9,8 @@ import Register       from './pages/Register'
 import SearchResults  from './pages/SearchResults'
 import BookingForm    from './pages/BookingForm'
 import MyBookings     from './pages/MyBookings'
+import Admin from './pages/Admin'
+import Profile from './pages/Profile'
 
 export default function App() {
   return (
@@ -23,6 +25,8 @@ export default function App() {
             <Route path="/search"        element={<SearchResults />} />
             <Route path="/book/:trainId" element={<ProtectedRoute><BookingForm /></ProtectedRoute>} />
             <Route path="/my-bookings"   element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+            <Route path="/profile"       element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

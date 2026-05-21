@@ -50,11 +50,15 @@ export default function Navbar() {
 
           {user ? (
             <div className="navbar__user">
-              <div className="navbar__avatar">{user.name?.[0]?.toUpperCase() || 'U'}</div>
+              <Link to="/profile" className="navbar__avatar" onClick={closeMenu}>
+                {user.name?.[0]?.toUpperCase() || 'U'}
+              </Link>
               <div>
                 <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>Signed in</div>
                 <div style={{ fontWeight: 700, fontFamily: 'var(--font-head)' }}>
-                  {user.name?.split(' ')[0]}
+                  <Link to="/profile" onClick={closeMenu}>
+                    {user.name?.split(' ')[0]}
+                  </Link>
                 </div>
               </div>
               <button type="button" className="btn btn-secondary" onClick={handleLogout}>
